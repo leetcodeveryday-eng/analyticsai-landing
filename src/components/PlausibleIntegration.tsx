@@ -14,13 +14,31 @@ const PlausibleIntegration: React.FC<PlausibleIntegrationProps> = ({ className }
     // Check if Plausible is running
     const checkPlausibleConnection = async () => {
       try {
+        // Try a simple GET request first
         const response = await fetch('http://localhost:8000', { 
-          method: 'HEAD',
-          mode: 'no-cors' // This will work even if CORS is not configured
+          method: 'GET',
+          mode: 'cors'
         })
-        setIsConnected(true)
+        
+        // If we get a response (even a redirect), Plausible is running
+        if (response.status === 200 || response.status === 302) {
+          setIsConnected(true)
+        } else {
+          setIsConnected(false)
+        }
       } catch (error) {
-        setIsConnected(false)
+        console.log('Plausible connection check failed:', error)
+        // Try with no-cors as fallback
+        try {
+          await fetch('http://localhost:8000', { 
+            method: 'HEAD',
+            mode: 'no-cors'
+          })
+          setIsConnected(true)
+        } catch (fallbackError) {
+          console.log('Plausible fallback connection check failed:', fallbackError)
+          setIsConnected(false)
+        }
       } finally {
         setIsLoading(false)
       }
@@ -99,8 +117,8 @@ const PlausibleIntegration: React.FC<PlausibleIntegrationProps> = ({ className }
           <div className="flex items-center space-x-3">
             <CheckCircle className="w-5 h-5 text-green-500" />
             <div>
-              <h3 className="font-semibold text-white">Plausible Analytics Connected</h3>
-              <p className="text-sm text-gray-400">Privacy-friendly analytics dashboard</p>
+              <h3 className="font-semibold text-white">Plausible Analytics Dashboard</h3>
+              <p className="text-sm text-gray-400">Privacy-friendly analytics platform</p>
             </div>
           </div>
           <a 
@@ -110,16 +128,17 @@ const PlausibleIntegration: React.FC<PlausibleIntegrationProps> = ({ className }
             className="inline-flex items-center space-x-2 bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded text-sm transition-colors"
           >
             <ExternalLink className="w-4 h-4" />
-            <span>Open Dashboard</span>
+            <span>Open in New Tab</span>
           </a>
         </div>
       </div>
       
-      <div className="h-96">
+      <div className="h-[calc(100vh-200px)]">
         <iframe 
           src="http://localhost:8000" 
           className="w-full h-full border-0"
           title="Plausible Analytics Dashboard"
+          allow="fullscreen"
         />
       </div>
     </div>

@@ -105,10 +105,10 @@ This makes it perfect for apps that need to respect user privacy while still get
     <div className="h-screen bg-gray-900 flex flex-col">
       <Header />
       
-      <div className="flex-1 flex">
+      <div className="flex-1 flex overflow-hidden">
         <Sidebar onTabChange={setActiveTab} activeTab={activeTab} />
         
-        <div className="flex-1 flex">
+        <div className="flex-1 flex overflow-hidden">
           {activeTab === 'add' ? (
             <>
               {/* Mobile Emulator Section */}
@@ -137,7 +137,7 @@ This makes it perfect for apps that need to respect user privacy while still get
             </>
           ) : (
             /* Analytics Dashboard Section */
-            <div className="flex-1">
+            <div className="flex-1 h-full">
               <AnalyticsDashboard />
             </div>
           )}
