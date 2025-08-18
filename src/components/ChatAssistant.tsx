@@ -7,9 +7,10 @@ interface ChatAssistantProps {
   messages: Message[]
   onSendMessage: (message: string) => void
   appData: AppData
+  onAddRecording: () => void
 }
 
-const ChatAssistant: React.FC<ChatAssistantProps> = ({ messages, onSendMessage, appData }) => {
+const ChatAssistant: React.FC<ChatAssistantProps> = ({ messages, onSendMessage, appData, onAddRecording }) => {
   const [inputMessage, setInputMessage] = useState('')
   const [isTyping, setIsTyping] = useState(false)
   const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null)
@@ -146,6 +147,19 @@ const ChatAssistant: React.FC<ChatAssistantProps> = ({ messages, onSendMessage, 
 
       {/* Input Area */}
       <div className="p-4 border-t border-gray-700">
+        {/* Add Recording Button - Only show when app is uploaded */}
+        {appData.uploadedFile && (
+          <div className="mb-3">
+            <button
+              onClick={onAddRecording}
+              className="w-full p-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center space-x-2"
+            >
+              <span>📹</span>
+              <span>Add Recording</span>
+            </button>
+          </div>
+        )}
+        
         <div className="flex items-end space-x-2">
           <div className="flex-1 relative">
             <textarea

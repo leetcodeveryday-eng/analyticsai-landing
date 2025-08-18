@@ -37,7 +37,7 @@ const Header: React.FC = () => {
             <HelpCircle className="w-4 h-4" />
           </button>
           <div className="flex items-center space-x-1 text-sm text-gray-300 cursor-pointer hover:text-white">
-            <span>chris@mobileboost.io</span>
+            <span>nithilan@analytics.ai</span>
             <ChevronDown className="w-4 h-4" />
           </div>
         </div>

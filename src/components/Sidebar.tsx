@@ -1,16 +1,17 @@
 import React from 'react'
 import { motion } from 'framer-motion'
-import { TestTube, BarChart3, SquareStack, Settings, Menu } from 'lucide-react'
+import { TestTube, BarChart3, BookOpen, Menu } from 'lucide-react'
 
 interface SidebarProps {
-  activeTab: 'add' | 'view'
-  onTabChange: (tab: 'add' | 'view') => void
+  activeTab: 'add' | 'view' | 'docs'
+  onTabChange: (tab: 'add' | 'view' | 'docs') => void
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ activeTab, onTabChange }) => {
   const menuItems = [
     { icon: BarChart3, label: 'Add Analytics', id: 'add' as const },
     { icon: TestTube, label: 'View Analytics', id: 'view' as const },
+                { icon: BookOpen, label: 'PostHog Server', id: 'docs' as const },
   ]
 
   return (

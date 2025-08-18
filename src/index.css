@@ -14,7 +14,7 @@
 
 @layer components {
   .mobile-frame {
-    @apply relative w-80 h-[600px] bg-black rounded-[3rem] p-2 shadow-2xl border border-gray-700;
+    @apply relative w-[320px] h-[690px] bg-black rounded-[3rem] p-2 shadow-2xl border border-gray-700;
   }
   
   .mobile-screen {

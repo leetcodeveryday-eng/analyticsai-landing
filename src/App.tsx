@@ -3,6 +3,7 @@ import { motion } from 'framer-motion'
 import MobileEmulator from './components/MobileEmulator'
 import ChatAssistant from './components/ChatAssistant'
 import AnalyticsDashboard from './components/AnalyticsDashboard'
+import PostHogServer from './components/PostHogServer'
 import Header from './components/Header'
 import Sidebar from './components/Sidebar'
 
@@ -21,7 +22,8 @@ export interface AppData {
 }
 
 function App() {
-  const [activeTab, setActiveTab] = useState<'add' | 'view'>('add')
+  const [activeTab, setActiveTab] = useState<'add' | 'view' | 'docs'>('add')
+  const [shouldPlayVideo, setShouldPlayVideo] = useState(false)
   
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -58,7 +60,15 @@ function App() {
       version: '1.0.0' // This would be extracted from the IPA
     }))
     
+    // Reset video playback state when new file is uploaded
+    setShouldPlayVideo(false)
+    
     addMessage(`I've uploaded ${file.name}. The app appears to be "${file.name.replace('.ipa', '')}". I'm ready to help you add analytics directly to your product! What type of analytics would you like to integrate?`, 'assistant')
+  }
+
+  const enablePlayButton = () => {
+    // play new video
+    
   }
 
   const handleChatMessage = async (message: string) => {
@@ -68,37 +78,83 @@ function App() {
     setTimeout(() => {
       let response = ''
       
-      if (message.toLowerCase().includes('analytics') || message.toLowerCase().includes('tracking')) {
-        response = `I can help you integrate Plausible Analytics into your iOS app! Plausible is a privacy-friendly, GDPR-compliant analytics platform that doesn't use cookies or collect personal data. 
+      if (message == "I want to find out how many users drop off after the onboarding screen. This is what it looks like when a user completes the onboarding flow.") {
+        response = `Here is a practical, step-by-step guide on how to answer "how many users drop off after the onboarding?" for your engineering team.
 
-Here's how we can get started:
-1. **Add the Plausible script** to your iOS app's web view or use their Events API
-2. **Track custom events** like user actions, purchases, and feature usage
-3. **View insights** in the analytics dashboard (check the "View Analytics" tab)
+To measure drop-off, you need to define the start and end points of your onboarding process and track how many users successfully move from start to finish. This is called a funnel. The users who start but don't finish are the ones who "drop off."
 
-Would you like me to help you set up specific tracking events for your app?`
-      } else if (message.toLowerCase().includes('privacy') || message.toLowerCase().includes('gdpr')) {
-        response = `Great question! Plausible Analytics is designed with privacy in mind:
+## 1. 🎯 Define the Onboarding Funnel
+First, you and the product team need to define the essential steps of the onboarding process. This is a product decision, not an engineering one. Map out the critical path a new user must take to be considered "onboarded."
 
-✅ **No cookies** - Doesn't use any cookies or persistent identifiers
-✅ **GDPR compliant** - No personal data collection
-✅ **No IP tracking** - IP addresses are never stored
-✅ **Lightweight** - Only 1KB tracking script
+A typical funnel might look like this:
 
-This makes it perfect for apps that need to respect user privacy while still getting valuable analytics insights.`
-      } else {
-        const responses = [
-          "I can help you add Plausible Analytics directly to your app! Plausible is a privacy-friendly alternative to Google Analytics. Let's start by setting up tracking events.",
-          "Great choice! I'll help you integrate Plausible Analytics into your app step by step. First, let me analyze your app structure to suggest the best places to add tracking events.",
-          "I can generate the exact code you need to add Plausible Analytics to your app. Would you like me to start with user engagement tracking, conversion events, or custom user actions?",
-          "Let me create the Plausible Analytics integration code for you. I'll include event tracking, user identification, and performance monitoring to give you comprehensive insights.",
-          "Perfect! I'll generate the necessary code snippets and configuration files for Plausible Analytics. This will include SDK setup, event tracking, and dashboard configuration."
-        ]
-        response = responses[Math.floor(Math.random() * responses.length)]
+Step 1: User opens the app for the first time (views Welcome Screen).
+
+Step 2: User signs up or creates an account.
+
+Step 3: User completes select 3 artists
+
+Step 4: User sees the home screen for the first time.
+
+The start of your funnel is Step 1. The end is Step 4.
+
+## 2. ⚙️ Implement Event Tracking
+Next, implement tracking for specific events. An "event" is just a record of a user action. Since you have no tracking in the project, you'll need to start with the basics.
+
+A. Establish User Identity
+Before tracking actions, you must be able to identify the user performing them.
+
+user_id: A unique identifier for each user that is created after they sign up or log in. This should be persistent.
+
+anonymous_id: A unique identifier for a user before they sign up. This allows you to track what anonymous visitors do and later tie it to their user_id once they register.
+
+B. Instrument the Key Funnel Events
+For the funnel defined above, the engineers need to add code that sends an event at the beginning and end of the flow.
+
+The Starting Event: This event should fire as soon as the user enters the onboarding flow.
+
+Event Name: Onboarding_Started
+
+When to Trigger: When the first screen of the onboarding process is viewed.
+
+The Completion Event: This event should fire only when the user has successfully completed the final step.
+
+Event Name: Onboarding_Completed
+
+When to Trigger: When the user lands on the main dashboard or home screen for the very first time after finishing the last setup action.
+
+The Returned Event: This event should fire only when the user has successfully completed the final step.
+
+Event Name: Returned_after_onboarding
+
+When to Trigger: When the user relaunches or re-foregrounds the application one or more days after completing onboarding.
+
+To get more detailed insights into where users drop off, you should also track the intermediate steps. For example:
+
+Account_Created
+
+Artist_Selection_Completed
+
+Do you want me to implement tracking for all the events now?
+`
+      } else if (message == "Yes, implement those events.") {
+        response = `5 events have been added. Press play to show how the events are going to be tracked in the flow. Would you like me to make a Pull Request for the changes?`
+
+      } else if (message == "Create the PR") {
+        response = `A Pull Request has been created. Waiting for approval.`
       }
       
       addMessage(response, 'assistant')
     }, 1000)
+  }
+
+  const handleAddRecording = () => {
+    // Add a 2-second delay before starting video playback
+    setTimeout(() => {
+      setShouldPlayVideo(true)
+    }, 2000)
+    
+    addMessage('Watching application flow...', 'assistant')
   }
 
   return (
@@ -122,6 +178,7 @@ This makes it perfect for apps that need to respect user privacy while still get
                   <MobileEmulator 
                     appData={appData}
                     onFileUpload={handleFileUpload}
+                    shouldPlayVideo={shouldPlayVideo}
                   />
                 </div>
               </div>
@@ -132,13 +189,19 @@ This makes it perfect for apps that need to respect user privacy while still get
                   messages={messages}
                   onSendMessage={handleChatMessage}
                   appData={appData}
+                  onAddRecording={handleAddRecording}
                 />
               </div>
             </>
-          ) : (
+          ) : activeTab === 'view' ? (
             /* Analytics Dashboard Section */
             <div className="flex-1 h-full">
               <AnalyticsDashboard />
+            </div>
+          ) : (
+            /* PostHog Server Section */
+            <div className="flex-1 h-full">
+              <PostHogServer />
             </div>
           )}
         </div>
