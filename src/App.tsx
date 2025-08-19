@@ -1,5 +1,6 @@
-import React, { useState } from 'react'
+import React, { useState, useRef, useEffect } from 'react'
 import { motion } from 'framer-motion'
+import { ChevronDown, Plus, Settings } from 'lucide-react'
 import MobileEmulator from './components/MobileEmulator'
 import ChatAssistant from './components/ChatAssistant'
 import AnalyticsDashboard from './components/AnalyticsDashboard'
@@ -49,6 +50,42 @@ function App() {
     bundleId: '',
     version: ''
   })
+
+  // Project management state
+  const [isProjectDropdownOpen, setIsProjectDropdownOpen] = useState(false)
+  const [selectedProject, setSelectedProject] = useState<string>('Select Project')
+  const dropdownRef = useRef<HTMLDivElement>(null)
+  
+  // Mock project data - in real app this would come from API
+  const projects = [
+    { id: '1', name: 'MyApp iOS', type: 'iOS' },
+    { id: '2', name: 'Web Dashboard', type: 'Web' },
+    { id: '3', name: 'Android App', type: 'Android' }
+  ]
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsProjectDropdownOpen(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [])
+
+  const handleProjectSelect = (projectName: string) => {
+    setSelectedProject(projectName)
+    setIsProjectDropdownOpen(false)
+  }
+
+  const handleConnectProject = () => {
+    // Handle connect project logic
+    console.log('Connecting to project...')
+  }
 
   const addMessage = (content: string, type: 'user' | 'assistant', buttons?: Array<{ text: string; action: string }>) => {
     const newMessage: Message = {
@@ -225,20 +262,65 @@ Do you want me to implement tracking for all the events now?`
           {activeTab === 'add' ? (
             <>
               {/* Mobile Emulator Section */}
-              <div className="flex-1 flex items-center justify-center p-8">
-                <div className="text-center">
-                  <div className="mb-4">
-                    <span className="text-gray-400 text-sm bg-gray-800 px-3 py-1 rounded shadow-sm">
-                      Embedded Content
-                    </span>
+              <div className="flex-1 relative">
+                {/* Project Management - Top Left and Top Right */}
+                {/* Project Selector Dropdown - Top Left */}
+                <div className="absolute top-4 left-4 z-10">
+                  <div className="relative" ref={dropdownRef}>
+                    <button
+                      onClick={() => setIsProjectDropdownOpen(!isProjectDropdownOpen)}
+                      className="flex items-center space-x-2 px-3 py-1.5 bg-gray-700 hover:bg-gray-600 rounded-md text-sm text-white transition-colors shadow-lg"
+                    >
+                      <span>{selectedProject}</span>
+                      <ChevronDown className={`w-4 h-4 transition-transform ${isProjectDropdownOpen ? 'rotate-180' : ''}`} />
+                    </button>
+                    
+                    {isProjectDropdownOpen && (
+                      <div className="absolute top-full left-0 mt-1 w-64 bg-gray-800 border border-gray-600 rounded-md shadow-lg z-50">
+                        <div className="p-2">
+                          <div className="text-xs text-gray-400 px-2 py-1">Recent Projects</div>
+                          {projects.map((project) => (
+                            <button
+                              key={project.id}
+                              onClick={() => handleProjectSelect(project.name)}
+                              className="w-full text-left px-2 py-2 hover:bg-gray-700 rounded text-sm text-white flex items-center justify-between"
+                            >
+                              <span>{project.name}</span>
+                              <span className="text-xs text-gray-400 bg-gray-600 px-2 py-1 rounded">
+                                {project.type}
+                              </span>
+                            </button>
+                          ))}
+                          <div className="border-t border-gray-600 mt-2 pt-2">
+                            <button className="w-full text-left px-2 py-2 hover:bg-gray-700 rounded text-sm text-blue-400 flex items-center space-x-2">
+                              <Plus className="w-4 h-4" />
+                              <span>Add New Project</span>
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
-                  <MobileEmulator 
-                    appData={appData}
-                    onFileUpload={handleFileUpload}
-                    shouldPlayVideo={shouldPlayVideo}
-                    playEventsVideo={playEventsVideo}
-                    onVideoComplete={handleVideoComplete}
-                  />
+                </div>
+
+
+
+                {/* Mobile Emulator Content */}
+                <div className="flex items-center justify-center p-8 h-full">
+                  <div className="text-center">
+                    <div className="mb-4">
+                      <span className="text-gray-400 text-sm bg-gray-800 px-3 py-1 rounded shadow-sm">
+                        Embedded Content
+                      </span>
+                    </div>
+                    <MobileEmulator 
+                      appData={appData}
+                      onFileUpload={handleFileUpload}
+                      shouldPlayVideo={shouldPlayVideo}
+                      playEventsVideo={playEventsVideo}
+                      onVideoComplete={handleVideoComplete}
+                    />
+                  </div>
                 </div>
               </div>
 

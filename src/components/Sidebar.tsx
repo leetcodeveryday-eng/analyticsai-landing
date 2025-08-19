@@ -21,15 +21,8 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, onTabChange }) => {
       transition={{ duration: 0.5 }}
       className="sidebar w-48 h-full flex flex-col"
     >
-      {/* Logo */}
-      <div className="p-4 border-b border-gray-700">
-        <div className="w-8 h-8 bg-blue-500 rounded-lg flex items-center justify-center">
-          <span className="text-white font-bold text-lg">G</span>
-        </div>
-      </div>
-
       {/* Navigation Menu */}
-      <nav className="flex-1 p-4">
+      <nav className="flex-1 p-4 pt-4">
         <ul className="space-y-2">
           {menuItems.map((item) => (
             <li key={item.label}>
@@ -50,7 +43,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, onTabChange }) => {
       </nav>
 
       {/* Bottom Menu */}
-      <div className="p-4 border-t border-gray-700">
+      <div className="p-4">
         <button className="w-full flex items-center space-x-3 px-3 py-2 text-gray-400 hover:text-white hover:bg-gray-700 rounded-lg transition-colors">
           <Menu className="w-5 h-5" />
           <span className="text-sm font-medium">Help</span>

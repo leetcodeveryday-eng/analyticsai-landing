@@ -16,6 +16,9 @@ interface MobileEmulatorProps {
 const MobileEmulator: React.FC<MobileEmulatorProps> = ({ appData, onFileUpload, shouldPlayVideo, playEventsVideo, onVideoComplete }) => {
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [analysisComplete, setAnalysisComplete] = useState(false)
+  const [overlayPosition, setOverlayPosition] = useState({ x: 92, y: 13 })
+  const [isDragging, setIsDragging] = useState(false)
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 })
   const [videoPath, setVideoPath] = useState<string>('')
   const [isVideoPlaying, setIsVideoPlaying] = useState(false)
   const [videoDuration, setVideoDuration] = useState(30) // Default duration
@@ -99,6 +102,42 @@ const MobileEmulator: React.FC<MobileEmulatorProps> = ({ appData, onFileUpload, 
     }
   }
 
+  const handleMouseDown = (e: React.MouseEvent) => {
+    setIsDragging(true)
+    const rect = e.currentTarget.getBoundingClientRect()
+    setDragOffset({
+      x: e.clientX - rect.left,
+      y: e.clientY - rect.top
+    })
+  }
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging) return
+    
+    const container = e.currentTarget.getBoundingClientRect()
+    const newX = e.clientX - container.left - dragOffset.x
+    const newY = e.clientY - container.top - dragOffset.y
+    
+    // Constrain to container bounds
+    const maxX = container.width - 16 // 16px is overlay width
+    const maxY = container.height - 16 // 16px is overlay height
+    
+    const constrainedX = Math.max(0, Math.min(newX, maxX))
+    const constrainedY = Math.max(0, Math.min(newY, maxY))
+    
+    setOverlayPosition({
+      x: constrainedX,
+      y: constrainedY
+    })
+    
+    // Log relative position within phone screen
+    console.log(`Overlay position: x=${Math.round(constrainedX)}, y=${Math.round(constrainedY)}`)
+  }
+
+  const handleMouseUp = () => {
+    setIsDragging(false)
+  }
+
   const { getRootProps, getInputProps, isDragActive, fileRejections } = useDropzone({
     onDrop,
     accept: {
@@ -161,7 +200,12 @@ const MobileEmulator: React.FC<MobileEmulatorProps> = ({ appData, onFileUpload, 
                     <p className="text-sm text-gray-400 text-center mt-2">Extracting bundle info and dependencies</p>
                   </div>
                 ) : analysisComplete ? (
-                  <div className="h-full w-full">
+                  <div 
+                    className="h-full w-full relative"
+                    onMouseMove={handleMouseMove}
+                    onMouseUp={handleMouseUp}
+                    onMouseLeave={handleMouseUp}
+                  >
                     {/* Video takes entire phone screen - no status bar, no bezels */}
                     <video
                       ref={videoRef}
@@ -174,6 +218,15 @@ const MobileEmulator: React.FC<MobileEmulatorProps> = ({ appData, onFileUpload, 
                       preload="auto"
                       onLoadedMetadata={handleVideoLoad}
                       onEnded={handleVideoEnd}
+                    />
+                    {/* Draggable overlay to cover red dots in videos */}
+                    <div 
+                      className="absolute w-4 h-4 bg-black rounded-full z-10 cursor-move hover:bg-gray-800 transition-colors"
+                      style={{
+                        left: `${overlayPosition.x}px`,
+                        top: `${overlayPosition.y}px`
+                      }}
+                      onMouseDown={handleMouseDown}
                     />
                   </div>
                 ) : (
