@@ -3,32 +3,71 @@ import { motion } from 'framer-motion'
 import { useDropzone } from 'react-dropzone'
 import { Upload, Smartphone, FileText, AlertCircle } from 'lucide-react'
 import { AppData } from '../App'
+import EventsLog from './EventsLog'
 
 interface MobileEmulatorProps {
   appData: AppData
   onFileUpload: (file: File) => void
   shouldPlayVideo: boolean
+  playEventsVideo?: boolean
+  onVideoComplete?: () => void
 }
 
-const MobileEmulator: React.FC<MobileEmulatorProps> = ({ appData, onFileUpload, shouldPlayVideo }) => {
+const MobileEmulator: React.FC<MobileEmulatorProps> = ({ appData, onFileUpload, shouldPlayVideo, playEventsVideo, onVideoComplete }) => {
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [analysisComplete, setAnalysisComplete] = useState(false)
   const [videoPath, setVideoPath] = useState<string>('')
+  const [isVideoPlaying, setIsVideoPlaying] = useState(false)
+  const [videoDuration, setVideoDuration] = useState(30) // Default duration
+  const [showEventsLog, setShowEventsLog] = useState(false)
   const videoRef = useRef<HTMLVideoElement>(null)
 
   useEffect(() => {
-    // Set the video path to the public folder (served by the React app)
-    setVideoPath('/screen-recording.mov')
-  }, [])
+    // Set the video path based on whether we're playing events video or default
+    if (playEventsVideo) {
+      // Use the events video file from the public folder
+      setVideoPath('/events-video.mov')
+    } else {
+      // Set the video path to the public folder (served by the React app)
+      setVideoPath('/screen-recording.mov')
+    }
+  }, [playEventsVideo])
 
   useEffect(() => {
     // Play video when shouldPlayVideo becomes true
     if (shouldPlayVideo && videoRef.current) {
-      videoRef.current.play().catch((error) => {
-        console.log('Video play failed:', error)
-      })
+      // Set video properties for autoplay
+      videoRef.current.muted = true
+      videoRef.current.playsInline = true
+      videoRef.current.autoplay = playEventsVideo || false
+      
+      // Show events log when playing events video
+      if (playEventsVideo) {
+        setShowEventsLog(true)
+      }
+      
+      // Try to play the video
+      const playPromise = videoRef.current.play()
+      
+      if (playPromise !== undefined) {
+        playPromise.then(() => {
+          setIsVideoPlaying(true)
+        }).catch((error) => {
+          console.log('Video play failed:', error)
+          // If autoplay fails, try playing on user interaction
+          const handleUserInteraction = () => {
+            videoRef.current?.play().then(() => {
+              setIsVideoPlaying(true)
+            }).catch(console.error)
+            document.removeEventListener('click', handleUserInteraction)
+            document.removeEventListener('keydown', handleUserInteraction)
+          }
+          document.addEventListener('click', handleUserInteraction)
+          document.addEventListener('keydown', handleUserInteraction)
+        })
+      }
     }
-  }, [shouldPlayVideo])
+  }, [shouldPlayVideo, playEventsVideo])
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     const file = acceptedFiles[0]
@@ -43,6 +82,22 @@ const MobileEmulator: React.FC<MobileEmulatorProps> = ({ appData, onFileUpload, 
       }, 2000)
     }
   }, [onFileUpload])
+
+  const handleVideoLoad = () => {
+    if (videoRef.current) {
+      setVideoDuration(videoRef.current.duration || 30)
+    }
+  }
+
+  const handleVideoEnd = () => {
+    setIsVideoPlaying(false)
+    setShowEventsLog(false)
+    
+    // Call the callback when events video completes
+    if (playEventsVideo && onVideoComplete) {
+      onVideoComplete()
+    }
+  }
 
   const { getRootProps, getInputProps, isDragActive, fileRejections } = useDropzone({
     onDrop,
@@ -112,11 +167,13 @@ const MobileEmulator: React.FC<MobileEmulatorProps> = ({ appData, onFileUpload, 
                       ref={videoRef}
                       src={videoPath}
                       className="w-full h-full object-cover"
-                      autoPlay={false}
-                      muted
-                      playsInline
+                      autoPlay={playEventsVideo}
+                      muted={true}
+                      playsInline={true}
                       controls={false}
                       preload="auto"
+                      onLoadedMetadata={handleVideoLoad}
+                      onEnded={handleVideoEnd}
                     />
                   </div>
                 ) : (
@@ -157,6 +214,14 @@ const MobileEmulator: React.FC<MobileEmulatorProps> = ({ appData, onFileUpload, 
           </p>
         </motion.div>
       )}
+
+      {/* Events Log Popup */}
+      <EventsLog
+        isVisible={showEventsLog}
+        onClose={() => setShowEventsLog(false)}
+        videoDuration={videoDuration}
+        isPlaying={isVideoPlaying}
+      />
     </div>
   )
 }

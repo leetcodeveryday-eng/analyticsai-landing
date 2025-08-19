@@ -12,6 +12,10 @@ export interface Message {
   type: 'user' | 'assistant'
   content: string
   timestamp: Date
+  buttons?: Array<{
+    text: string
+    action: string
+  }>
 }
 
 export interface AppData {
@@ -24,6 +28,11 @@ export interface AppData {
 function App() {
   const [activeTab, setActiveTab] = useState<'add' | 'view' | 'docs'>('add')
   const [shouldPlayVideo, setShouldPlayVideo] = useState(false)
+  const [playEventsVideo, setPlayEventsVideo] = useState(false)
+  const [isRecording, setIsRecording] = useState(false)
+  const [hasRecordingAttachment, setHasRecordingAttachment] = useState(false)
+  const [isTyping, setIsTyping] = useState(false)
+  const [loadingText, setLoadingText] = useState<string>('')
   
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -41,12 +50,13 @@ function App() {
     version: ''
   })
 
-  const addMessage = (content: string, type: 'user' | 'assistant') => {
+  const addMessage = (content: string, type: 'user' | 'assistant', buttons?: Array<{ text: string; action: string }>) => {
     const newMessage: Message = {
       id: Date.now().toString(),
       type,
       content,
-      timestamp: new Date()
+      timestamp: new Date(),
+      buttons
     }
     setMessages(prev => [...prev, newMessage])
   }
@@ -62,6 +72,7 @@ function App() {
     
     // Reset video playback state when new file is uploaded
     setShouldPlayVideo(false)
+    setPlayEventsVideo(false)
     
     addMessage(`I've uploaded ${file.name}. The app appears to be "${file.name.replace('.ipa', '')}". I'm ready to help you add analytics directly to your product! What type of analytics would you like to integrate?`, 'assistant')
   }
@@ -74,12 +85,24 @@ function App() {
   const handleChatMessage = async (message: string) => {
     addMessage(message, 'user')
     
-    // Simulate AI response with Plausible Analytics integration
-    setTimeout(() => {
-      let response = ''
+    // Clear recording attachment when user sends a message
+    setHasRecordingAttachment(false)
+    
+    if (message == "I want to find out how many users drop off after the onboarding screen. This is what it looks like when a user completes the onboarding flow.") {
+      // Start typing indicator
+      setIsTyping(true)
+      setLoadingText('Thinking...')
       
-      if (message == "I want to find out how many users drop off after the onboarding screen. This is what it looks like when a user completes the onboarding flow.") {
-        response = `Here is a practical, step-by-step guide on how to answer "how many users drop off after the onboarding?" for your engineering team.
+      // After 2 seconds, update loading text
+      setTimeout(() => {
+        setLoadingText('Analyzing provided flow...')
+        
+        // After 3 more seconds, show the full response
+        setTimeout(() => {
+          setIsTyping(false)
+          setLoadingText('')
+          
+          const response = `Here is a practical, step-by-step guide on how to answer "how many users drop off after the onboarding?" for your engineering team.
 
 To measure drop-off, you need to define the start and end points of your onboarding process and track how many users successfully move from start to finish. This is called a funnel. The users who start but don't finish are the ones who "drop off."
 
@@ -135,11 +158,29 @@ Account_Created
 
 Artist_Selection_Completed
 
-Do you want me to implement tracking for all the events now?
-`
-      } else if (message == "Yes, implement those events.") {
+Do you want me to implement tracking for all the events now?`
+          
+          addMessage(response, 'assistant')
+        }, 3000)
+      }, 2000)
+      
+      return
+    }
+    
+    // Simulate AI response for other messages
+    setIsTyping(true)
+    
+    setTimeout(() => {
+      setIsTyping(false)
+      let response = ''
+      
+      if (message == "Yes, implement those events.") {
         response = `5 events have been added. Press play to show how the events are going to be tracked in the flow. Would you like me to make a Pull Request for the changes?`
-
+        
+        addMessage(response, 'assistant', [
+          { text: 'Play Events', action: 'play_events' }
+        ])
+        return
       } else if (message == "Create the PR") {
         response = `A Pull Request has been created. Waiting for approval.`
       }
@@ -149,12 +190,28 @@ Do you want me to implement tracking for all the events now?
   }
 
   const handleAddRecording = () => {
+    setIsRecording(true)
     // Add a 2-second delay before starting video playback
     setTimeout(() => {
       setShouldPlayVideo(true)
     }, 2000)
-    
-    addMessage('Watching application flow...', 'assistant')
+  }
+
+  const handleStopRecording = () => {
+    setIsRecording(false)
+    setHasRecordingAttachment(true)
+  }
+
+  const handleButtonClick = (action: string) => {
+    if (action === 'play_events') {
+      setPlayEventsVideo(true)
+      setShouldPlayVideo(true)
+      addMessage('Playing events in the mobile emulator...', 'assistant')
+    }
+  }
+
+  const handleVideoComplete = () => {
+    addMessage('Would you like me to create a pull request for the code changes?', 'assistant')
   }
 
   return (
@@ -179,17 +236,25 @@ Do you want me to implement tracking for all the events now?
                     appData={appData}
                     onFileUpload={handleFileUpload}
                     shouldPlayVideo={shouldPlayVideo}
+                    playEventsVideo={playEventsVideo}
+                    onVideoComplete={handleVideoComplete}
                   />
                 </div>
               </div>
 
               {/* Chat Assistant Section */}
-              <div className="w-96">
+              <div className="w-1/2">
                 <ChatAssistant 
                   messages={messages}
                   onSendMessage={handleChatMessage}
+                  onButtonClick={handleButtonClick}
                   appData={appData}
                   onAddRecording={handleAddRecording}
+                  isRecording={isRecording}
+                  onStopRecording={handleStopRecording}
+                  hasRecordingAttachment={hasRecordingAttachment}
+                  isTyping={isTyping}
+                  loadingText={loadingText}
                 />
               </div>
             </>

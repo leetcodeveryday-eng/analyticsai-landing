@@ -6,13 +6,18 @@ import { Message, AppData } from '../App'
 interface ChatAssistantProps {
   messages: Message[]
   onSendMessage: (message: string) => void
+  onButtonClick: (action: string) => void
   appData: AppData
   onAddRecording: () => void
+  isRecording?: boolean
+  onStopRecording?: () => void
+  hasRecordingAttachment?: boolean
+  loadingText?: string
+  isTyping?: boolean
 }
 
-const ChatAssistant: React.FC<ChatAssistantProps> = ({ messages, onSendMessage, appData, onAddRecording }) => {
+const ChatAssistant: React.FC<ChatAssistantProps> = ({ messages, onSendMessage, onButtonClick, appData, onAddRecording, isRecording = false, onStopRecording, hasRecordingAttachment = false, loadingText, isTyping = false }) => {
   const [inputMessage, setInputMessage] = useState('')
-  const [isTyping, setIsTyping] = useState(false)
   const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
@@ -29,10 +34,6 @@ const ChatAssistant: React.FC<ChatAssistantProps> = ({ messages, onSendMessage, 
     if (inputMessage.trim() && !isTyping) {
       onSendMessage(inputMessage.trim())
       setInputMessage('')
-      setIsTyping(true)
-      
-      // Reset typing indicator after response
-      setTimeout(() => setIsTyping(false), 1000)
     }
   }
 
@@ -41,6 +42,12 @@ const ChatAssistant: React.FC<ChatAssistantProps> = ({ messages, onSendMessage, 
       e.preventDefault()
       handleSendMessage()
     }
+  }
+
+  const autoResize = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const textarea = e.target
+    textarea.style.height = 'auto'
+    textarea.style.height = `${textarea.scrollHeight}px`
   }
 
   const copyMessage = async (content: string, messageId: string) => {
@@ -99,6 +106,19 @@ const ChatAssistant: React.FC<ChatAssistantProps> = ({ messages, onSendMessage, 
                   <div className="flex items-start justify-between group">
                     <div className="flex-1">
                       <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                      {message.buttons && message.buttons.length > 0 && (
+                        <div className="mt-3 flex flex-wrap gap-2">
+                          {message.buttons.map((button, index) => (
+                            <button
+                              key={index}
+                              onClick={() => onButtonClick(button.action)}
+                              className="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors"
+                            >
+                              {button.text}
+                            </button>
+                          ))}
+                        </div>
+                      )}
                     </div>
                     <button
                       onClick={() => copyMessage(message.content, message.id)}
@@ -132,10 +152,15 @@ const ChatAssistant: React.FC<ChatAssistantProps> = ({ messages, onSendMessage, 
                 <Bot className="w-4 h-4 text-gray-300" />
               </div>
               <div className="bg-gray-700 rounded-2xl p-3">
-                <div className="flex space-x-1">
-                  <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce"></div>
-                  <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                  <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                <div className="flex items-center space-x-2">
+                  <div className="flex space-x-1">
+                    <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce"></div>
+                    <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                    <div className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                  </div>
+                  {loadingText && (
+                    <span className="text-sm text-gray-300">{loadingText}</span>
+                  )}
                 </div>
               </div>
             </div>
@@ -147,30 +172,61 @@ const ChatAssistant: React.FC<ChatAssistantProps> = ({ messages, onSendMessage, 
 
       {/* Input Area */}
       <div className="p-4 border-t border-gray-700">
-        {/* Add Recording Button - Only show when app is uploaded */}
+        {/* Recording Button - Only show when app is uploaded */}
         {appData.uploadedFile && (
           <div className="mb-3">
-            <button
-              onClick={onAddRecording}
-              className="w-full p-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center space-x-2"
-            >
-              <span>📹</span>
-              <span>Add Recording</span>
-            </button>
+            {!isRecording ? (
+              <button
+                onClick={onAddRecording}
+                className="w-full p-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center space-x-2"
+              >
+                <span>📹</span>
+                <span>Add Recording</span>
+              </button>
+            ) : (
+              <button
+                onClick={onStopRecording}
+                className="w-full p-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center justify-center space-x-2"
+              >
+                <span>⏹️</span>
+                <span>Stop Recording</span>
+              </button>
+            )}
           </div>
         )}
         
+        {/* Video Context - Show when recording attachment is available */}
+        {hasRecordingAttachment && (
+          <div className="mb-3 p-3 bg-gray-800 border border-gray-600 rounded-lg">
+            <div className="flex items-center space-x-3">
+              <div className="w-12 h-8 bg-gray-700 rounded flex items-center justify-center">
+                <span className="text-xs text-gray-400">🎥</span>
+              </div>
+              <div className="flex-1">
+                <p className="text-sm text-white font-medium">User Flow</p>
+                <p className="text-xs text-gray-400">Ready to analyze your app flow</p>
+              </div>
+              <button className="text-gray-400 hover:text-white transition-colors">
+                <span className="text-xs">Remove</span>
+              </button>
+            </div>
+          </div>
+        )}
+
         <div className="flex items-end space-x-2">
           <div className="flex-1 relative">
             <textarea
               ref={inputRef}
               value={inputMessage}
-              onChange={(e) => setInputMessage(e.target.value)}
+              onChange={(e) => {
+                setInputMessage(e.target.value)
+                autoResize(e)
+              }}
               onKeyPress={handleKeyPress}
-              placeholder="Ask about analytics integration..."
-              className="w-full p-3 pr-10 bg-gray-700 border border-gray-600 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white placeholder-gray-400"
+              placeholder={hasRecordingAttachment ? "Ask about the recording..." : "Ask about analytics integration..."}
+              className="w-full p-3 pr-10 bg-gray-700 border border-gray-600 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-white placeholder-gray-400 overflow-hidden"
               rows={1}
-              style={{ minHeight: '44px', maxHeight: '120px' }}
+              style={{ minHeight: '44px' }}
             />
           </div>
           <button

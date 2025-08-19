@@ -19,7 +19,7 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, onTabChange }) => {
       initial={{ opacity: 0, x: -20 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.5 }}
-      className="sidebar w-64 h-full flex flex-col"
+      className="sidebar w-48 h-full flex flex-col"
     >
       {/* Logo */}
       <div className="p-4 border-b border-gray-700">
