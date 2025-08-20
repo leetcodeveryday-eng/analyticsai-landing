@@ -11,7 +11,6 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, onTabChange }) => {
   const menuItems = [
     { icon: BarChart3, label: 'Add Analytics', id: 'add' as const },
     { icon: TestTube, label: 'View Analytics', id: 'view' as const },
-                { icon: BookOpen, label: 'PostHog Server', id: 'docs' as const },
   ]
 
   return (
@@ -19,7 +18,8 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, onTabChange }) => {
       initial={{ opacity: 0, x: -20 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.5 }}
-      className="sidebar w-48 h-full flex flex-col"
+      className="sidebar w-48 bg-gray-800 flex flex-col flex-shrink-0"
+      style={{ height: 'calc(100vh - 48px)' }}
     >
       {/* Navigation Menu */}
       <nav className="flex-1 p-4 pt-4">

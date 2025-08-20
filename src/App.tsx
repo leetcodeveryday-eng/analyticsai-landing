@@ -34,6 +34,7 @@ function App() {
   const [hasRecordingAttachment, setHasRecordingAttachment] = useState(false)
   const [isTyping, setIsTyping] = useState(false)
   const [loadingText, setLoadingText] = useState<string>('')
+  const [showPopup, setShowPopup] = useState(false)
   
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -58,9 +59,7 @@ function App() {
   
   // Mock project data - in real app this would come from API
   const projects = [
-    { id: '1', name: 'MyApp iOS', type: 'iOS' },
-    { id: '2', name: 'Web Dashboard', type: 'Web' },
-    { id: '3', name: 'Android App', type: 'Android' }
+    { id: '1', name: 'Spotify Example', type: 'iOS' },
   ]
 
   // Close dropdown when clicking outside
@@ -76,6 +75,52 @@ function App() {
       document.removeEventListener('mousedown', handleClickOutside)
     }
   }, [])
+
+  // Handle popup trigger via GET endpoint
+  useEffect(() => {
+    const checkForPopupTrigger = async () => {
+      try {
+        console.log('Checking for popup trigger...')
+        const response = await fetch('/api/trigger-popup', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        })
+        
+        console.log('Response status:', response.status)
+        
+        if (response.ok) {
+          const data = await response.json()
+          console.log('Popup trigger data:', data)
+          if (data.showPopup) {
+            console.log('Showing popup!')
+            setShowPopup(true)
+            // Reset the trigger after showing popup
+            await fetch('/api/reset-popup', { method: 'POST' })
+          }
+        }
+      } catch (error) {
+        console.log('Error checking popup trigger:', error)
+      }
+    }
+
+    // Check for popup trigger every 5 seconds
+    const interval = setInterval(checkForPopupTrigger, 5000)
+    
+    // Also check immediately on component mount
+    checkForPopupTrigger()
+
+    return () => clearInterval(interval)
+  }, [])
+
+  const handleViewReport = () => {
+    setShowPopup(false)
+    // Navigate to the analytics view
+    setActiveTab('view')
+    // Reset the trigger
+    fetch('/api/reset-popup', { method: 'POST' })
+  }
 
   const handleProjectSelect = (projectName: string) => {
     setSelectedProject(projectName)
@@ -252,9 +297,51 @@ Do you want me to implement tracking for all the events now?`
   }
 
   return (
-    <div className="h-screen bg-gray-900 flex flex-col">
+    <div className="h-screen bg-gray-900 text-white flex flex-col">
+      {/* Popup Notification */}
+      {showPopup && (
+        <div className="fixed top-4 right-4 z-50 w-80 bg-white border border-gray-200 rounded-lg shadow-lg p-4 animate-in slide-in-from-top-2 duration-300">
+          <div className="flex items-start space-x-3">
+            <div className="flex-shrink-0">
+              <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                <span className="text-blue-600 text-sm font-semibold">AI</span>
+              </div>
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm text-gray-900 mb-3">
+                I have been watching the events and have a report ready for you to view.
+              </p>
+              <div className="flex space-x-2">
+                <button
+                  onClick={handleViewReport}
+                  className="px-3 py-1.5 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 transition-colors"
+                >
+                  View Report
+                </button>
+                <button
+                  onClick={() => setShowPopup(false)}
+                  className="px-3 py-1.5 text-gray-500 text-sm font-medium hover:text-gray-700 transition-colors"
+                >
+                  Dismiss
+                </button>
+              </div>
+            </div>
+            <button
+              onClick={() => setShowPopup(false)}
+              className="flex-shrink-0 text-gray-400 hover:text-gray-600"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Header */}
       <Header />
       
+      {/* Main Content */}
       <div className="flex-1 flex overflow-hidden">
         <Sidebar onTabChange={setActiveTab} activeTab={activeTab} />
         
@@ -302,8 +389,6 @@ Do you want me to implement tracking for all the events now?`
                     )}
                   </div>
                 </div>
-
-
 
                 {/* Mobile Emulator Content */}
                 <div className="flex items-center justify-center p-8 h-full">
