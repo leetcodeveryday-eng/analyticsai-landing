@@ -3,6 +3,29 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Send, Bot, User, Copy, Check } from 'lucide-react'
 import { Message, AppData } from '../App'
 
+// Function to convert URLs to clickable links
+const convertUrlsToLinks = (text: string) => {
+  const urlRegex = /(https?:\/\/[^\s]+)/g
+  const parts = text.split(urlRegex)
+  
+  return parts.map((part, index) => {
+    if (part.match(urlRegex)) {
+      return (
+        <a
+          key={index}
+          href={part}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-blue-400 hover:text-blue-300 underline break-all"
+        >
+          {part}
+        </a>
+      )
+    }
+    return part
+  })
+}
+
 interface ChatAssistantProps {
   messages: Message[]
   onSendMessage: (message: string) => void
@@ -93,7 +116,7 @@ const ChatAssistant: React.FC<ChatAssistantProps> = ({ messages, onSendMessage, 
               transition={{ duration: 0.3 }}
               className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
             >
-              <div className={`flex items-start space-x-2 max-w-[80%] ${message.type === 'user' ? 'flex-row-reverse space-x-reverse' : ''}`}>
+              <div className={`flex items-start space-x-2 max-w-[90%] ${message.type === 'user' ? 'flex-row-reverse space-x-reverse' : ''}`}>
                 <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
                   message.type === 'user' 
                     ? 'bg-blue-600 text-white' 
@@ -106,7 +129,7 @@ const ChatAssistant: React.FC<ChatAssistantProps> = ({ messages, onSendMessage, 
                   <div className="flex items-start justify-between group">
                     <div className="flex-1">
                       <p className="text-sm whitespace-pre-wrap">
-                        {message.content}
+                        {convertUrlsToLinks(message.content)}
                       </p>
                       {message.buttons && message.buttons.length > 0 && (
                         <div className="mt-3 flex flex-wrap gap-2">

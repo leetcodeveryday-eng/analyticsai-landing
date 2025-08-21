@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { motion } from 'framer-motion'
-import { ArrowLeft, ArrowRight, RotateCcw, Link, HelpCircle, ChevronDown, Circle } from 'lucide-react'
+import { ChevronDown, Circle, HelpCircle } from 'lucide-react'
 
 const Header: React.FC = () => {
   const [showHelp, setShowHelp] = useState(false)

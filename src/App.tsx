@@ -71,45 +71,9 @@ function App() {
     }
   }, [])
 
-  // Handle popup trigger via GET endpoint
-  useEffect(() => {
-    const checkForPopupTrigger = async () => {
-      try {
-        console.log('Checking for popup trigger...')
-        const response = await fetch('/api/trigger-popup', {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        })
-        
-        console.log('Response status:', response.status)
-        
-        if (response.ok) {
-          const data = await response.json()
-          console.log('Popup trigger data:', data)
-          if (data.showPopup) {
-            console.log('Showing popup!')
-            setShowPopup(true)
-            // Reset the trigger after showing popup
-            await fetch('/api/reset-popup', { method: 'POST' })
-          }
-        }
-      } catch (error) {
-        console.log('Error checking popup trigger:', error)
-      }
-    }
 
-    // Check for popup trigger every 5 seconds
-    const interval = setInterval(checkForPopupTrigger, 5000)
-    
-    // Also check immediately on component mount
-    checkForPopupTrigger()
 
-    return () => clearInterval(interval)
-  }, [])
-
-  // Show initial welcome message with typing animation
+    // Show initial welcome message with typing animation
   useEffect(() => {
     const showWelcomeMessage = async () => {
       if (!hasShownWelcomeRef.current) {
@@ -123,29 +87,12 @@ function App() {
 
   // Handle keyboard shortcuts
   useEffect(() => {
-    const handleKeyDown = async (event: KeyboardEvent) => {
+    const handleKeyDown = (event: KeyboardEvent) => {
       // Check for Cmd+O (Mac) or Ctrl+O (Windows/Linux)
       if ((event.metaKey || event.ctrlKey) && event.key === 'o') {
         event.preventDefault() // Prevent default browser behavior
         console.log('Cmd+O pressed - triggering popup!')
-        
-        try {
-          // Trigger popup via API
-          const response = await fetch('/api/trigger-popup', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ showPopup: true }),
-          })
-          
-          if (response.ok) {
-            console.log('Popup triggered via keyboard shortcut')
-            setShowPopup(true)
-          }
-        } catch (error) {
-          console.log('Error triggering popup via keyboard:', error)
-        }
+        setShowPopup(true)
       }
     }
 
@@ -159,9 +106,9 @@ function App() {
     setShowPopup(false)
     // Navigate to the analytics view
     setActiveTab('view')
-    // Reset the trigger
-    fetch('/api/reset-popup', { method: 'POST' })
   }
+
+
 
   const handleProjectSelect = (projectName: string) => {
     setSelectedProject(projectName)
@@ -354,14 +301,59 @@ Do you want me to implement tracking for all the events now?`
       let response = ''
       
       if (message == "Yes, implement those events.") {
-        response = `5 events have been added. Press play to show how the events are going to be tracked in the flow. Would you like me to make a Pull Request for the changes?`
+        response = `Perfect! I've successfully implemented a comprehensive analytics system for your Spotify clone app. Here's a summary of what has been created:
+🎯 Analytics Implementation Complete
+Key Components Created:
+AnalyticsManager (SpotifyClone/Service/AnalyticsManager.swift)
+Singleton pattern for easy access throughout the app
+Tracks all required funnel events
+Stores events locally for development
+Ready for production analytics service integration
+OnboardingViewModel Updates
+Integrated with analytics manager
+Tracks step completion and user data
+Measures onboarding completion time
+App Lifecycle Integration
+AppDelegate monitors app foreground/active states
+Tracks return after onboarding (1+ days later)
+Analytics Dashboard (SpotifyClone/Views/AnalyticsDashboard.swift)
+Development tool to view all tracked events
+Floating button on home screen for easy access
+Shows event details, properties, and timestamps
+Events Tracked:
+✅ Onboarding_Started - When user enters onboarding flow
+✅ Onboarding_Completed - When user finishes onboarding
+✅ Returned_after_onboarding - When user returns 1+ days later
+✅ Account_Created - When user provides email
+✅ Artist_Selection_Completed - When user selects 3 artists✅ Onboarding_Step_Completed - For each individual step
+Features:
+
+
+Real-time tracking of user progress through onboarding
+Detailed properties for each event (timestamps, user data, step info)
+Local storage for development and debugging
+Production-ready architecture for Firebase, Mixpanel, etc.
+Console logging with 📊 prefix for easy debugging
+Analytics dashboard accessible from home screen
+
+How to Use:
+Run the app and tap "SIGN UP FREE" to start onboarding
+Complete the flow (email → password → age → name → artists)
+Check console for analytics events (📊 prefix)
+Access dashboard via floating analytics button on home screen
+View all events with detailed properties and timestamps
+The system is now ready to provide valuable insights into your onboarding funnel, helping you identify drop-off points and optimize the user experience. All events are properly instrumented and will fire at the exact moments specified in your requirements.
+
+Click the "Play Events" button to see the trached events in the mobile emulator.
+
+Would you like me to make a Pull Request for the changes?`
         
         addTypingMessage(response, [
           { text: 'Play Events', action: 'play_events' }
         ])
         return
       } else if (message == "Create the PR") {
-        response = `A Pull Request has been created. Waiting for approval.`
+        response = `A Pull Request has been created - https://github.com/jk3vinl/iOSSpotifyExample/pull/2\nWaiting for approval.`
       }
       
       addTypingMessage(response)
@@ -406,7 +398,7 @@ Do you want me to implement tracking for all the events now?`
             </div>
             <div className="flex-1 min-w-0">
               <p className="text-sm text-gray-900 mb-3">
-                I have been watching the events and have a report ready for you to view.
+                I have a report ready for you to view.
               </p>
               <div className="flex space-x-2">
                 <button
