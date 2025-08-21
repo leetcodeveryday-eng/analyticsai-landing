@@ -35,15 +35,10 @@ function App() {
   const [isTyping, setIsTyping] = useState(false)
   const [loadingText, setLoadingText] = useState<string>('')
   const [showPopup, setShowPopup] = useState(false)
+  const [isTypingMessage, setIsTypingMessage] = useState(false)
+  const hasShownWelcomeRef = useRef(false)
   
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: '1',
-      type: 'assistant',
-      content: 'Hello! I\'m your analytics.ai assistant. Upload your iOS app to get started, and I\'ll help you add analytics directly to your product interactively.',
-      timestamp: new Date()
-    }
-  ])
+  const [messages, setMessages] = useState<Message[]>([])
   
   const [appData, setAppData] = useState<AppData>({
     uploadedFile: null,
@@ -114,6 +109,18 @@ function App() {
     return () => clearInterval(interval)
   }, [])
 
+  // Show initial welcome message with typing animation
+  useEffect(() => {
+    const showWelcomeMessage = async () => {
+      if (!hasShownWelcomeRef.current) {
+        hasShownWelcomeRef.current = true
+        await addTypingMessage('Hello! I\'m your analytics.ai assistant. Upload your iOS app to get started, and I\'ll help you add analytics directly to your product interactively.')
+      }
+    }
+    
+    showWelcomeMessage()
+  }, [])
+
   // Handle keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = async (event: KeyboardEvent) => {
@@ -177,6 +184,62 @@ function App() {
     setMessages(prev => [...prev, newMessage])
   }
 
+  const addTypingMessage = async (content: string, buttons?: Array<{ text: string; action: string }>) => {
+    // Prevent multiple typing messages
+    if (isTypingMessage) return
+    
+    setIsTypingMessage(true)
+    const messageId = Date.now().toString()
+    const newMessage: Message = {
+      id: messageId,
+      type: 'assistant',
+      content: '',
+      timestamp: new Date(),
+      buttons: undefined // Start without buttons
+    }
+    
+    // Add empty message first
+    setMessages(prev => [...prev, newMessage])
+    
+    // Start typing animation
+    setIsTyping(true)
+    
+    // Type out the content word by word for natural typing effect
+    const words = content.split(' ')
+    let currentContent = ''
+    
+    for (let i = 0; i < words.length; i++) {
+      currentContent += (i > 0 ? ' ' : '') + words[i]
+      
+      // Update the message content
+      setMessages(prev => 
+        prev.map(msg => 
+          msg.id === messageId 
+            ? { ...msg, content: currentContent }
+            : msg
+        )
+      )
+      
+      // Add a faster delay between words for ChatGPT-like typing effect
+      await new Promise(resolve => setTimeout(resolve, 20 + Math.random() * 30))
+    }
+    
+    // Add buttons after typing is complete
+    if (buttons && buttons.length > 0) {
+      setMessages(prev => 
+        prev.map(msg => 
+          msg.id === messageId 
+            ? { ...msg, buttons }
+            : msg
+        )
+      )
+    }
+    
+    // Stop typing indicator and reset flag
+    setIsTyping(false)
+    setIsTypingMessage(false)
+  }
+
   const handleFileUpload = (file: File) => {
     setAppData(prev => ({
       ...prev,
@@ -190,7 +253,7 @@ function App() {
     setShouldPlayVideo(false)
     setPlayEventsVideo(false)
     
-    addMessage(`I've uploaded ${file.name}. The app appears to be "${file.name.replace('.ipa', '')}". I'm ready to help you add analytics directly to your product! What type of analytics would you like to integrate?`, 'assistant')
+    addTypingMessage(`I've uploaded ${file.name}. The app appears to be "${file.name.replace('.ipa', '')}". I'm ready to help you add analytics directly to your product! What type of analytics would you like to integrate?`)
   }
 
   const enablePlayButton = () => {
@@ -213,7 +276,7 @@ function App() {
       setTimeout(() => {
         setLoadingText('Analyzing provided flow...')
         
-        // After 3 more seconds, show the full response
+        // After 3 more seconds, show the full response with typing animation
         setTimeout(() => {
           setIsTyping(false)
           setLoadingText('')
@@ -276,7 +339,7 @@ Artist_Selection_Completed
 
 Do you want me to implement tracking for all the events now?`
           
-          addMessage(response, 'assistant')
+          addTypingMessage(response)
         }, 3000)
       }, 2000)
       
@@ -293,7 +356,7 @@ Do you want me to implement tracking for all the events now?`
       if (message == "Yes, implement those events.") {
         response = `5 events have been added. Press play to show how the events are going to be tracked in the flow. Would you like me to make a Pull Request for the changes?`
         
-        addMessage(response, 'assistant', [
+        addTypingMessage(response, [
           { text: 'Play Events', action: 'play_events' }
         ])
         return
@@ -301,7 +364,7 @@ Do you want me to implement tracking for all the events now?`
         response = `A Pull Request has been created. Waiting for approval.`
       }
       
-      addMessage(response, 'assistant')
+      addTypingMessage(response)
     }, 1000)
   }
 
@@ -322,12 +385,12 @@ Do you want me to implement tracking for all the events now?`
     if (action === 'play_events') {
       setPlayEventsVideo(true)
       setShouldPlayVideo(true)
-      addMessage('Playing events in the mobile emulator...', 'assistant')
+      addTypingMessage('Playing events in the mobile emulator...')
     }
   }
 
   const handleVideoComplete = () => {
-    addMessage('Would you like me to create a pull request for the code changes?', 'assistant')
+    addTypingMessage('Would you like me to create a pull request for the code changes?')
   }
 
   return (

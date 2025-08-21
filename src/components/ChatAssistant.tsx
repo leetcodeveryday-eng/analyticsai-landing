@@ -105,7 +105,9 @@ const ChatAssistant: React.FC<ChatAssistantProps> = ({ messages, onSendMessage, 
                 <div className={`chat-message ${message.type}`}>
                   <div className="flex items-start justify-between group">
                     <div className="flex-1">
-                      <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+                      <p className="text-sm whitespace-pre-wrap">
+                        {message.content}
+                      </p>
                       {message.buttons && message.buttons.length > 0 && (
                         <div className="mt-3 flex flex-wrap gap-2">
                           {message.buttons.map((button, index) => (
@@ -140,8 +142,8 @@ const ChatAssistant: React.FC<ChatAssistantProps> = ({ messages, onSendMessage, 
           ))}
         </AnimatePresence>
 
-        {/* Typing Indicator */}
-        {isTyping && (
+        {/* Typing Indicator - Only show when there's no typing message */}
+        {isTyping && loadingText && (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
