@@ -156,9 +156,6 @@ const ChatAssistant: React.FC<ChatAssistantProps> = ({ messages, onSendMessage, 
                       )}
                     </button>
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">
-                    {formatTimestamp(message.timestamp)}
-                  </p>
                 </div>
               </div>
             </motion.div>

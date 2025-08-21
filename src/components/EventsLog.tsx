@@ -18,7 +18,6 @@ interface EventsLogProps {
 
 const EventsLog: React.FC<EventsLogProps> = ({ isVisible, onClose, videoDuration, isPlaying }) => {
   const [events, setEvents] = useState<Event[]>([])
-  const [currentTime, setCurrentTime] = useState(0)
 
   // Function to calculate timestamp relative to 2:30 PM
   const calculateRelativeTimestamp = (timeOffset: number) => {
@@ -40,31 +39,30 @@ const EventsLog: React.FC<EventsLogProps> = ({ isVisible, onClose, videoDuration
   useEffect(() => {
     if (!isVisible || !isPlaying) {
       setEvents([])
-      setCurrentTime(0)
       return
     }
 
-    const interval = setInterval(() => {
-      setCurrentTime(prev => {
-        const newTime = prev + 0.1 // Update every 100ms
-        
-        // Check if any events should be triggered
-        eventSchedule.forEach(event => {
-          if (newTime >= event.time && newTime < event.time + 0.1) {
-            setEvents(prev => [...prev, {
-              id: `${event.name}_${Date.now()}`,
-              name: event.name,
-              timestamp: calculateRelativeTimestamp(event.time),
-              metadata: event.metadata
-            }])
-          }
-        })
-        
-        return newTime
-      })
-    }, 100)
+    // Clear any existing timeouts
+    const timeouts: NodeJS.Timeout[] = []
 
-    return () => clearInterval(interval)
+    // Schedule each event with its own setTimeout
+    eventSchedule.forEach(event => {
+      const timeout = setTimeout(() => {
+        setEvents(prev => [...prev, {
+          id: `${event.name}_${Date.now()}`,
+          name: event.name,
+          timestamp: calculateRelativeTimestamp(event.time),
+          metadata: event.metadata
+        }])
+      }, event.time * 1000) // Convert seconds to milliseconds
+      
+      timeouts.push(timeout)
+    })
+
+    // Cleanup function to clear all timeouts
+    return () => {
+      timeouts.forEach(timeout => clearTimeout(timeout))
+    }
   }, [isVisible, isPlaying])
 
   const formatMetadata = (metadata: Record<string, any>) => {
