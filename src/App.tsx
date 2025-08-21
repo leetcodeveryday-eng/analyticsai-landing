@@ -114,6 +114,40 @@ function App() {
     return () => clearInterval(interval)
   }, [])
 
+  // Handle keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = async (event: KeyboardEvent) => {
+      // Check for Cmd+O (Mac) or Ctrl+O (Windows/Linux)
+      if ((event.metaKey || event.ctrlKey) && event.key === 'o') {
+        event.preventDefault() // Prevent default browser behavior
+        console.log('Cmd+O pressed - triggering popup!')
+        
+        try {
+          // Trigger popup via API
+          const response = await fetch('/api/trigger-popup', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ showPopup: true }),
+          })
+          
+          if (response.ok) {
+            console.log('Popup triggered via keyboard shortcut')
+            setShowPopup(true)
+          }
+        } catch (error) {
+          console.log('Error triggering popup via keyboard:', error)
+        }
+      }
+    }
+
+    document.addEventListener('keydown', handleKeyDown)
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [])
+
   const handleViewReport = () => {
     setShowPopup(false)
     // Navigate to the analytics view
