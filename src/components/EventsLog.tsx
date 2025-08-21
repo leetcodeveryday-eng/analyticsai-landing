@@ -20,13 +20,21 @@ const EventsLog: React.FC<EventsLogProps> = ({ isVisible, onClose, videoDuration
   const [events, setEvents] = useState<Event[]>([])
   const [currentTime, setCurrentTime] = useState(0)
 
+  // Function to calculate timestamp relative to 2:30 PM
+  const calculateRelativeTimestamp = (timeOffset: number) => {
+    const baseTime = new Date()
+    baseTime.setHours(14, 29, 54, 0) // Set to 2:30 PM
+    
+    const relativeTime = new Date(baseTime.getTime() + (timeOffset * 1000)) // Add offset in milliseconds
+    return relativeTime.toLocaleTimeString()
+  }
+
   // Define the events with their timing (in seconds from video start)
   const eventSchedule = [
-    { name: 'Onboarding_Started', time: 2, metadata: { screen: 'Welcome Screen', user_id: 'anon_123' } },
-    { name: 'Account_Created', time: 8, metadata: { method: 'email', user_id: 'user_456' } },
-    { name: 'Artist_Selection_Completed', time: 15, metadata: { artists_selected: 3, user_id: 'user_456' } },
-    { name: 'Onboarding_Completed', time: 22, metadata: { duration_seconds: 20, user_id: 'user_456' } },
-    { name: 'Returned_after_onboarding', time: 28, metadata: { days_since_onboarding: 1, user_id: 'user_456' } }
+    { name: 'Onboarding_Started', time: 3 },
+    { name: 'Account_Created', time: 24, metadata: { method: 'email', user_id: 'user_456' } },
+    { name: 'Artist_Selection_Completed', time: 43, metadata: { artists_selected: 3, user_id: 'user_456' } },
+    { name: 'Onboarding_Completed', time: 52, metadata: { duration_seconds: 20, user_id: 'user_456' } },
   ]
 
   useEffect(() => {
@@ -46,7 +54,7 @@ const EventsLog: React.FC<EventsLogProps> = ({ isVisible, onClose, videoDuration
             setEvents(prev => [...prev, {
               id: `${event.name}_${Date.now()}`,
               name: event.name,
-              timestamp: new Date().toLocaleTimeString(),
+              timestamp: calculateRelativeTimestamp(event.time),
               metadata: event.metadata
             }])
           }
@@ -117,11 +125,6 @@ const EventsLog: React.FC<EventsLogProps> = ({ isVisible, onClose, videoDuration
                               {event.timestamp}
                             </span>
                           </div>
-                          {event.metadata && (
-                            <p className="text-xs text-gray-300 mt-1">
-                              {formatMetadata(event.metadata)}
-                            </p>
-                          )}
                         </div>
                       </div>
                     </motion.div>

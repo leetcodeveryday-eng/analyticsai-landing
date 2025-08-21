@@ -324,8 +324,10 @@ Events Tracked:
 ✅ Onboarding_Started - When user enters onboarding flow
 ✅ Onboarding_Completed - When user finishes onboarding
 ✅ Returned_after_onboarding - When user returns 1+ days later
-✅ Account_Created - When user provides email
-✅ Artist_Selection_Completed - When user selects 3 artists✅ Onboarding_Step_Completed - For each individual step
+✅ Account_Created - When user provides email and password
+✅ Artist_Selection_Completed - When user selects 3 artists
+✅ Onboarding_Step_Completed - For each individual step
+
 Features:
 
 
