@@ -7,6 +7,7 @@ import AnalyticsDashboard from './components/AnalyticsDashboard'
 import PostHogServer from './components/PostHogServer'
 import Header from './components/Header'
 import Sidebar from './components/Sidebar'
+import LandingPage from './components/LandingPage'
 
 export interface Message {
   id: string
@@ -27,6 +28,7 @@ export interface AppData {
 }
 
 function App() {
+  const [showLandingPage, setShowLandingPage] = useState(true)
   const [activeTab, setActiveTab] = useState<'add' | 'view' | 'docs'>('add')
   const [shouldPlayVideo, setShouldPlayVideo] = useState(false)
   const [playEventsVideo, setPlayEventsVideo] = useState(false)
@@ -388,148 +390,154 @@ Would you like me to make a Pull Request for the changes?`
   }
 
   return (
-    <div className="h-screen bg-gray-900 text-white flex flex-col">
-      {/* Popup Notification */}
-      {showPopup && (
-        <div className="fixed top-4 right-4 z-50 w-80 bg-white border border-gray-200 rounded-lg shadow-lg p-4 animate-in slide-in-from-top-2 duration-300">
-          <div className="flex items-start space-x-3">
-            <div className="flex-shrink-0">
-              <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                <span className="text-blue-600 text-sm font-semibold">AI</span>
-              </div>
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm text-gray-900 mb-3">
-                I have a report ready for you to view.
-              </p>
-              <div className="flex space-x-2">
-                <button
-                  onClick={handleViewReport}
-                  className="px-3 py-1.5 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 transition-colors"
-                >
-                  View Report
-                </button>
+    <>
+      {showLandingPage ? (
+        <LandingPage />
+      ) : (
+        <div className="h-screen bg-gray-900 text-white flex flex-col">
+          {/* Popup Notification */}
+          {showPopup && (
+            <div className="fixed top-4 right-4 z-50 w-80 bg-white border border-gray-200 rounded-lg shadow-lg p-4 animate-in slide-in-from-top-2 duration-300">
+              <div className="flex items-start space-x-3">
+                <div className="flex-shrink-0">
+                  <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                    <span className="text-blue-600 text-sm font-semibold">AI</span>
+                  </div>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm text-gray-900 mb-3">
+                    I have a report ready for you to view.
+                  </p>
+                  <div className="flex space-x-2">
+                    <button
+                      onClick={handleViewReport}
+                      className="px-3 py-1.5 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 transition-colors"
+                    >
+                      View Report
+                    </button>
+                    <button
+                      onClick={() => setShowPopup(false)}
+                      className="px-3 py-1.5 text-gray-500 text-sm font-medium hover:text-gray-700 transition-colors"
+                    >
+                      Dismiss
+                    </button>
+                  </div>
+                </div>
                 <button
                   onClick={() => setShowPopup(false)}
-                  className="px-3 py-1.5 text-gray-500 text-sm font-medium hover:text-gray-700 transition-colors"
+                  className="flex-shrink-0 text-gray-400 hover:text-gray-600"
                 >
-                  Dismiss
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
                 </button>
               </div>
             </div>
-            <button
-              onClick={() => setShowPopup(false)}
-              className="flex-shrink-0 text-gray-400 hover:text-gray-600"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
+          )}
+
+          {/* Header */}
+          <Header />
+          
+          {/* Main Content */}
+          <div className="flex-1 flex overflow-hidden">
+            <Sidebar onTabChange={setActiveTab} activeTab={activeTab} />
+            
+            <div className="flex-1 flex overflow-hidden">
+              {activeTab === 'add' ? (
+                <>
+                  {/* Mobile Emulator Section */}
+                  <div className="flex-1 relative">
+                    {/* Project Management - Top Left and Top Right */}
+                    {/* Project Selector Dropdown - Top Left */}
+                    <div className="absolute top-4 left-4 z-10">
+                      <div className="relative" ref={dropdownRef}>
+                        <button
+                          onClick={() => setIsProjectDropdownOpen(!isProjectDropdownOpen)}
+                          className="flex items-center space-x-2 px-3 py-1.5 bg-gray-700 hover:bg-gray-600 rounded-md text-sm text-white transition-colors shadow-lg"
+                        >
+                          <span>{selectedProject}</span>
+                          <ChevronDown className={`w-4 h-4 transition-transform ${isProjectDropdownOpen ? 'rotate-180' : ''}`} />
+                        </button>
+                        
+                        {isProjectDropdownOpen && (
+                          <div className="absolute top-full left-0 mt-1 w-64 bg-gray-800 border border-gray-600 rounded-md shadow-lg z-50">
+                            <div className="p-2">
+                              <div className="text-xs text-gray-400 px-2 py-1">Recent Projects</div>
+                              {projects.map((project) => (
+                                <button
+                                  key={project.id}
+                                  onClick={() => handleProjectSelect(project.name)}
+                                  className="w-full text-left px-2 py-2 hover:bg-gray-700 rounded text-sm text-white flex items-center justify-between"
+                                >
+                                  <span>{project.name}</span>
+                                  <span className="text-xs text-gray-400 bg-gray-600 px-2 py-1 rounded">
+                                    {project.type}
+                                  </span>
+                                </button>
+                              ))}
+                              <div className="border-t border-gray-600 mt-2 pt-2">
+                                <button className="w-full text-left px-2 py-2 hover:bg-gray-700 rounded text-sm text-blue-400 flex items-center space-x-2">
+                                  <Plus className="w-4 h-4" />
+                                  <span>Add New Project</span>
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Mobile Emulator Content */}
+                    <div className="flex items-center justify-center p-8 h-full">
+                      <div className="text-center">
+                        <div className="mb-4">
+                          <span className="text-gray-400 text-sm bg-gray-800 px-3 py-1 rounded shadow-sm">
+                            Embedded Content
+                          </span>
+                        </div>
+                        <MobileEmulator 
+                          appData={appData}
+                          onFileUpload={handleFileUpload}
+                          shouldPlayVideo={shouldPlayVideo}
+                          playEventsVideo={playEventsVideo}
+                          onVideoComplete={handleVideoComplete}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Chat Assistant Section */}
+                  <div className="w-1/2">
+                    <ChatAssistant 
+                      messages={messages}
+                      onSendMessage={handleChatMessage}
+                      onButtonClick={handleButtonClick}
+                      appData={appData}
+                      onAddRecording={handleAddRecording}
+                      isRecording={isRecording}
+                      onStopRecording={handleStopRecording}
+                      hasRecordingAttachment={hasRecordingAttachment}
+                      isTyping={isTyping}
+                      loadingText={loadingText}
+                    />
+                  </div>
+                </>
+              ) : activeTab === 'view' ? (
+                /* Analytics Dashboard Section */
+                <div className="flex-1 h-full">
+                  <AnalyticsDashboard />
+                </div>
+              ) : (
+                /* PostHog Server Section */
+                <div className="flex-1 h-full">
+                  <PostHogServer />
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}
-
-      {/* Header */}
-      <Header />
-      
-      {/* Main Content */}
-      <div className="flex-1 flex overflow-hidden">
-        <Sidebar onTabChange={setActiveTab} activeTab={activeTab} />
-        
-        <div className="flex-1 flex overflow-hidden">
-          {activeTab === 'add' ? (
-            <>
-              {/* Mobile Emulator Section */}
-              <div className="flex-1 relative">
-                {/* Project Management - Top Left and Top Right */}
-                {/* Project Selector Dropdown - Top Left */}
-                <div className="absolute top-4 left-4 z-10">
-                  <div className="relative" ref={dropdownRef}>
-                    <button
-                      onClick={() => setIsProjectDropdownOpen(!isProjectDropdownOpen)}
-                      className="flex items-center space-x-2 px-3 py-1.5 bg-gray-700 hover:bg-gray-600 rounded-md text-sm text-white transition-colors shadow-lg"
-                    >
-                      <span>{selectedProject}</span>
-                      <ChevronDown className={`w-4 h-4 transition-transform ${isProjectDropdownOpen ? 'rotate-180' : ''}`} />
-                    </button>
-                    
-                    {isProjectDropdownOpen && (
-                      <div className="absolute top-full left-0 mt-1 w-64 bg-gray-800 border border-gray-600 rounded-md shadow-lg z-50">
-                        <div className="p-2">
-                          <div className="text-xs text-gray-400 px-2 py-1">Recent Projects</div>
-                          {projects.map((project) => (
-                            <button
-                              key={project.id}
-                              onClick={() => handleProjectSelect(project.name)}
-                              className="w-full text-left px-2 py-2 hover:bg-gray-700 rounded text-sm text-white flex items-center justify-between"
-                            >
-                              <span>{project.name}</span>
-                              <span className="text-xs text-gray-400 bg-gray-600 px-2 py-1 rounded">
-                                {project.type}
-                              </span>
-                            </button>
-                          ))}
-                          <div className="border-t border-gray-600 mt-2 pt-2">
-                            <button className="w-full text-left px-2 py-2 hover:bg-gray-700 rounded text-sm text-blue-400 flex items-center space-x-2">
-                              <Plus className="w-4 h-4" />
-                              <span>Add New Project</span>
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Mobile Emulator Content */}
-                <div className="flex items-center justify-center p-8 h-full">
-                  <div className="text-center">
-                    <div className="mb-4">
-                      <span className="text-gray-400 text-sm bg-gray-800 px-3 py-1 rounded shadow-sm">
-                        Embedded Content
-                      </span>
-                    </div>
-                    <MobileEmulator 
-                      appData={appData}
-                      onFileUpload={handleFileUpload}
-                      shouldPlayVideo={shouldPlayVideo}
-                      playEventsVideo={playEventsVideo}
-                      onVideoComplete={handleVideoComplete}
-                    />
-                  </div>
-                </div>
-              </div>
-
-              {/* Chat Assistant Section */}
-              <div className="w-1/2">
-                <ChatAssistant 
-                  messages={messages}
-                  onSendMessage={handleChatMessage}
-                  onButtonClick={handleButtonClick}
-                  appData={appData}
-                  onAddRecording={handleAddRecording}
-                  isRecording={isRecording}
-                  onStopRecording={handleStopRecording}
-                  hasRecordingAttachment={hasRecordingAttachment}
-                  isTyping={isTyping}
-                  loadingText={loadingText}
-                />
-              </div>
-            </>
-          ) : activeTab === 'view' ? (
-            /* Analytics Dashboard Section */
-            <div className="flex-1 h-full">
-              <AnalyticsDashboard />
-            </div>
-          ) : (
-            /* PostHog Server Section */
-            <div className="flex-1 h-full">
-              <PostHogServer />
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
+    </>
   )
 }
 
