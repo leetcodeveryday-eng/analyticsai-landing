@@ -23,7 +23,14 @@ const MobileEmulator: React.FC<MobileEmulatorProps> = ({ appData, onFileUpload, 
   const [isVideoPlaying, setIsVideoPlaying] = useState(false)
   const [videoDuration, setVideoDuration] = useState(30) // Default duration
   const [showEventsLog, setShowEventsLog] = useState(false)
+  const [showPasswordAnimation, setShowPasswordAnimation] = useState(false)
+  const [passwordDots, setPasswordDots] = useState(0)
   const videoRef = useRef<HTMLVideoElement>(null)
+
+  // Debug: Log animation state changes
+  useEffect(() => {
+    console.log('Password animation state changed:', showPasswordAnimation)
+  }, [showPasswordAnimation])
 
   useEffect(() => {
     // Set the video path based on whether we're playing events video or default
@@ -92,9 +99,48 @@ const MobileEmulator: React.FC<MobileEmulatorProps> = ({ appData, onFileUpload, 
     }
   }
 
+  const handleVideoTimeUpdate = () => {
+    if (videoRef.current && isVideoPlaying) {
+      const currentTime = videoRef.current.currentTime
+      
+      if (playEventsVideo) {
+        // Events video: Show password animation from 18 to 23 seconds, dots complete by 21
+        if (currentTime >= 18 && currentTime < 23) {
+          setShowPasswordAnimation(true)
+          // Calculate number of dots based on time (0.3 seconds per dot, complete by 21 seconds)
+          const dotsToShow = Math.min(10, Math.floor((currentTime - 18) * 3.33))
+          setPasswordDots(dotsToShow)
+          console.log('Events video - Password animation: SHOW at', currentTime, 'dots:', dotsToShow)
+        } else {
+          setShowPasswordAnimation(false)
+          setPasswordDots(0)
+          if (currentTime < 18 || currentTime >= 23) {
+            console.log('Events video - Password animation: HIDE at', currentTime)
+          }
+        }
+      } else {
+        // Screen recording: Show password animation from 20 to 28.5 seconds, dots complete by 28
+        if (currentTime >= 20 && currentTime < 28.5) {
+          setShowPasswordAnimation(true)
+          // Calculate number of dots based on time (0.8 seconds per dot, complete by 28 seconds)
+          const dotsToShow = Math.min(10, Math.floor((currentTime - 20) * 1.25))
+          setPasswordDots(dotsToShow)
+          console.log('Screen recording - Password animation: SHOW at', currentTime, 'dots:', dotsToShow)
+        } else {
+          setShowPasswordAnimation(false)
+          setPasswordDots(0)
+          if (currentTime < 20 || currentTime >= 28.5) {
+            console.log('Screen recording - Password animation: HIDE at', currentTime)
+          }
+        }
+      }
+    }
+  }
+
   const handleVideoEnd = () => {
     setIsVideoPlaying(false)
     setShowEventsLog(false)
+    setShowPasswordAnimation(false)
     
     // Call the callback when events video completes
     if (playEventsVideo && onVideoComplete) {
@@ -217,8 +263,25 @@ const MobileEmulator: React.FC<MobileEmulatorProps> = ({ appData, onFileUpload, 
                       controls={false}
                       preload="auto"
                       onLoadedMetadata={handleVideoLoad}
+                      onTimeUpdate={handleVideoTimeUpdate}
                       onEnded={handleVideoEnd}
                     />
+                    
+                    {/* Password Typing Animation */}
+                    {showPasswordAnimation && (
+                      <div 
+                        className="absolute z-20"
+                        style={{
+                          left: '15px',
+                          top: '113px'
+                        }}
+                      >
+                        <span className="text-white text-sm font-mono">
+                          {'•'.repeat(passwordDots)}
+                        </span>
+                      </div>
+                    )}
+                    
                     {/* Draggable overlay to cover red dots in videos */}
                     <div 
                       className="absolute w-4 h-4 bg-black rounded-full z-10 cursor-move hover:bg-gray-800 transition-colors"
