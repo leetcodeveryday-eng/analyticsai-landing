@@ -1,4 +1,4 @@
-# analytics.ai
+# AnalyticsAI
 
 A modern web application that provides an AI-powered assistant for integrating analytics into iOS applications. The application features a split-screen interface with a mobile emulator for IPA file uploads and an intelligent chat assistant for analytics integration guidance.
 
@@ -53,7 +53,7 @@ A modern web application that provides an AI-powered assistant for integrating a
 1. **Clone the repository**
    ```bash
    git clone <repository-url>
-   cd analytics.ai
+   cd AnalyticsAI
    ```
 
 2. **Install dependencies**
@@ -102,7 +102,7 @@ A modern web application that provides an AI-powered assistant for integrating a
 ## Project Structure
 
 ```
-analytics.ai/
+AnalyticsAI/
 ├── src/
 │   ├── components/
 │   │   ├── Header.tsx          # Application header

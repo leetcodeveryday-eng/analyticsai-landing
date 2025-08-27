@@ -51,7 +51,7 @@ const LandingPage: React.FC = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
-              <h1 className="text-2xl font-bold text-gray-900">analytics.ai</h1>
+              <h1 className="text-2xl font-bold text-gray-900">AnalyticsAI</h1>
             </div>
             
             {/* Desktop Navigation */}
@@ -159,7 +159,7 @@ const LandingPage: React.FC = () => {
             className="text-center mb-12"
           >
             <h2 className="text-3xl font-bold text-gray-900 mb-4">
-              Why choose analytics.ai?
+              Why choose AnalyticsAI?
             </h2>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
               Move faster, make better decisions, and reduce friction between product, data, and engineering teams.
@@ -220,9 +220,9 @@ const LandingPage: React.FC = () => {
       {/* Footer */}
       <footer className="bg-gray-900 text-white py-8 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto text-center">
-          <h3 className="text-2xl font-bold mb-2">analytics.ai</h3>
+          <h3 className="text-2xl font-bold mb-2">AnalyticsAI</h3>
           <p className="text-gray-400">
-            © 2025 analytics.ai. All rights reserved.
+            © 2025 AnalyticsAI. All rights reserved.
           </p>
         </div>
       </footer>
