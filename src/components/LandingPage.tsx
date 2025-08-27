@@ -235,7 +235,6 @@ const LandingPage: React.FC = () => {
               <video
                 className="w-full h-full object-cover"
                 controls
-                loop
               >
                 <source src="/demo-video.mp4" type="video/mp4" />
                 Your browser does not support the video tag.
