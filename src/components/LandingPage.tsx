@@ -1,10 +1,11 @@
 import React, { useState } from 'react'
 import { motion } from 'framer-motion'
-import { Play, Calendar, ArrowRight, CheckCircle, BarChart3, Zap, Shield } from 'lucide-react'
+import { Play, Calendar, ArrowRight, CheckCircle, BarChart3, Zap, Shield, Menu, X } from 'lucide-react'
 
 const LandingPage: React.FC = () => {
   const [isVideoModalOpen, setIsVideoModalOpen] = useState(false)
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false)
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [bookingForm, setBookingForm] = useState({
     name: '',
     email: '',
@@ -52,7 +53,9 @@ const LandingPage: React.FC = () => {
             <div className="flex items-center">
               <h1 className="text-2xl font-bold text-gray-900">analytics.ai</h1>
             </div>
-            <div className="flex items-center space-x-4">
+            
+            {/* Desktop Navigation */}
+            <div className="hidden md:flex items-center space-x-4">
               <button
                 onClick={() => setIsVideoModalOpen(true)}
                 className="flex items-center space-x-2 px-4 py-2 text-gray-600 hover:text-gray-900 transition-colors"
@@ -67,8 +70,47 @@ const LandingPage: React.FC = () => {
                 Book Demo
               </button>
             </div>
+
+            {/* Mobile Menu Button */}
+            <button
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="md:hidden p-2 text-gray-600 hover:text-gray-900 transition-colors"
+            >
+              {isMobileMenuOpen ? (
+                <X className="w-6 h-6" />
+              ) : (
+                <Menu className="w-6 h-6" />
+              )}
+            </button>
           </div>
         </div>
+
+        {/* Mobile Menu Overlay */}
+        {isMobileMenuOpen && (
+          <div className="md:hidden absolute top-full left-0 w-full bg-white border-b border-gray-100 shadow-lg">
+            <div className="px-4 py-6 space-y-4">
+              <button
+                onClick={() => {
+                  setIsVideoModalOpen(true)
+                  setIsMobileMenuOpen(false)
+                }}
+                className="flex items-center justify-center space-x-2 w-full px-4 py-3 text-gray-600 hover:text-gray-900 transition-colors border border-gray-200 rounded-lg hover:bg-gray-50"
+              >
+                <Play className="w-5 h-5" />
+                <span className="text-base font-medium">Watch Demo</span>
+              </button>
+              <button
+                onClick={() => {
+                  handleBookDemo()
+                  setIsMobileMenuOpen(false)
+                }}
+                className="flex items-center justify-center w-full px-4 py-3 bg-gray-900 text-white rounded-lg hover:bg-gray-800 transition-colors text-base font-medium"
+              >
+                Book Demo
+              </button>
+            </div>
+          </div>
+        )}
       </nav>
 
       {/* Hero Section */}
@@ -188,26 +230,25 @@ const LandingPage: React.FC = () => {
       {/* Video Modal */}
       {isVideoModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-4xl w-full max-h-[80vh] overflow-hidden">
-            <div className="flex justify-between items-center p-4 border-b">
-              <h3 className="text-lg font-semibold">Product Demo</h3>
-              <button
-                onClick={() => setIsVideoModalOpen(false)}
-                className="text-gray-500 hover:text-gray-700"
+          <div className="bg-white rounded-lg max-w-4xl w-full max-h-[80vh] overflow-hidden relative">
+            <div className="aspect-video bg-gray-100 rounded-lg overflow-hidden">
+              <video
+                className="w-full h-full object-cover"
+                controls
+                loop
               >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
+                <source src="/demo-video.mp4" type="video/mp4" />
+                Your browser does not support the video tag.
+              </video>
             </div>
-            <div className="p-4">
-              <div className="aspect-video bg-gray-100 rounded-lg flex items-center justify-center">
-                <div className="text-center">
-                  <Play className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-600">Demo video would be embedded here</p>
-                </div>
-              </div>
-            </div>
+            <button
+              onClick={() => setIsVideoModalOpen(false)}
+              className="absolute top-4 right-4 w-10 h-10 bg-black bg-opacity-50 hover:bg-opacity-70 text-white rounded-full flex items-center justify-center transition-all duration-200 backdrop-blur-sm"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
           </div>
         </div>
       )}
